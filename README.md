@@ -3,30 +3,26 @@
 An automated access-control system built with **Python 3** and **aiogram 3** to manage private Telegram channel memberships, dynamic single-use invitations, and time-based access revocation.
 
 ## Architecture & Flowchart
-+------------------+         +------------------+         +------------------+
-|                  |         |                  |         |                  |
-|   User / Client  | <-----> |   Telegram Bot   | <-----> | Private Channel  |
-|                  |         |   (aiogram 3)    |         |                  |
-+------------------+         +------------------+         +------------------+
-|                             |                            |
-| 1. /start & Request Access  |                            |
-|---------------------------->|                            |
-|                             | 2. Generate Single-Use Link|
-|                             |--------------------------->|
-| 3. Receive Exclusive Link   |                            |
-|<----------------------------|                            |
-|                                                          |
-| 4. Join via Unique Link                                  |
-|--------------------------------------------------------->|
-|                                                          |
-|                     [Background Task]                    |
-|                   Async Expiry Scheduler                 |
-|                             |                            |
-|                             | 5. If Expired: Kick/Ban    |
-|                             |--------------------------->|
-| 6. Notify Expired Access    |                            |
-|<----------------------------|                            |
 
+```text
+[ User / Client ] 
+       │
+       │  1. /start & Request Access
+       ▼
+[ Telegram Bot (aiogram 3) ] ─── 2. Generate Single-Use Link ───► [ Private Channel ]
+       │                                                                  ▲
+       │  3. Delivers Exclusive Invite Link                               │
+       ▼                                                                  │
+[ User Joins Channel ] ───────────────────────────────────────────────────┘
+
+[ Background Scheduler ]
+       │
+       │  4. Scans Active Subscriptions (Every hour)
+       ▼
+[ If Expired ] ─── 5. Ban & Unban (Revoke Access) ───► [ Kicked from Channel ]
+       │
+       └─────────► 6. Send Renewal Notification to User
+```
 ## Features
 
 * **Dynamic Single-Use Invite Links**: Generates exclusive invite links via Telegram Bot API with a strict member usage limit (`member_limit=1`) to prevent unauthorized link sharing.
